@@ -1,12 +1,13 @@
 "use client"
-import { useGetPlaces } from "@/api";
+import { useGetDummyPlaces } from "@/api";
 import CategoryItem from "@/components/CategoryItem";
 import Logo from "@/components/icons/Logo";
 import Map from "@/components/Map";
 import { useState } from "react";
 
+import 'react-leaflet-markercluster/styles'
+
 const categorieList = [
-  // { value: "", label : "Tous les lieux"},
   { value: "hotel", label : "Hôtels & hébergements"},
   { value: "restaurant", label : "Restaurants"},
   { value: "shoppings", label : "Shopping"},
@@ -17,7 +18,8 @@ const categorieList = [
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const { data: places , isLoading } = useGetPlaces()
+  // const { data: places , isLoading } = useGetPlaces(selectedCategories)
+  const { data: places , isLoading } = useGetDummyPlaces(selectedCategories)
   
   const handleToggleCategory = (value: string) => {
     if(selectedCategories.includes(value)) {
