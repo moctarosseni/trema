@@ -8,19 +8,19 @@ import { useState } from "react";
 import 'react-leaflet-markercluster/styles'
 
 const categorieList = [
-  { value: "hotel", label : "Hôtels & hébergements"},
-  { value: "restaurant", label : "Restaurants"},
-  { value: "shoppings", label : "Shopping"},
-  { value: "art", label : "Arts & Culture"},
-  { value: "cafe", label : "Cafés"},
+  { value: "Hotels & Accommodations", label : "Hôtels & hébergements"},
+  { value: "Restaurants", label : "Restaurants"},
+  { value: "Shoppings", label : "Shopping"},
+  { value: "Arts", label : "Arts & Culture"},
+  { value: "Cafes", label : "Cafés"},
 ]
 
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // const { data: places , isLoading } = useGetPlaces(selectedCategories)
+  // const d = useGetPlaces(selectedCategories)
   const { data: places , isLoading } = useGetDummyPlaces(selectedCategories)
-  
+
   const handleToggleCategory = (value: string) => {
     if(selectedCategories.includes(value)) {
       return setSelectedCategories(selectedCategories.filter((cat) => cat !== value))
