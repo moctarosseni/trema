@@ -1,3 +1,4 @@
+
 export type Place = {
     place_id: string;
     name: string;

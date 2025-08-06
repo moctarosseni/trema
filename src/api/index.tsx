@@ -10,15 +10,39 @@ interface ApiResponse<T> {
 }
 
 
-export const useGetPlaces = ( categories?: []) => useQuery<Place[], void>({
-    queryKey: ['places'],
-    queryFn: async () =>( await axios.get('https://admin.tre.ma/items/places', {
-      params: { categories },
+export const useGetPlaces = ( categories?: string[]) => useQuery<Place[], void>({
+  queryKey: ['places', categories],
+  queryFn: async () => {
+    let searchCategories = ""
+    // if(categories?.length){
+
+    //   const filterObject = {
+    //     _or: categories.map(cat => ({
+    //       categories: { _contains: cat }
+    //     }))
+    //   };
+    //   searchCategories = `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
+  
+    //   // const filterObject = {
+    //   //   _and: categories.map(cat => ({
+    //   //     categories: { _contains: cat }
+    //   //   }))
+    //   // };
+    //   // searchCategories = `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
+        
+        
+    //   // searchCategories = `&filter[categories][_eq]=${encodeURIComponent(JSON.stringify(categories))}`;
+    // }
+
+    const { data } = await axios.get(`https://admin.tre.ma/items/places?limit=400${searchCategories}`, {
       headers: {
         Authorization: "Bearer BNVt0x6gTllbqy2vbBpWFB6x8Y9se2Q0"
       }
-    })).data.data ,
-  });
+    })
+    
+    return filterPlacesByCategories(data.data, categories);
+  },
+});
 
 // New method to get places from dummy.json with filter
 import dummyData from './dummy.json';

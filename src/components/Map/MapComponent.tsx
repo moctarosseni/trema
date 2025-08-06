@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { Place } from '@/types/places';
 import Marker from './Marker';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import { MapLoader } from '.';
 
 interface MapComponentProps {
   places: Place[]
@@ -50,7 +51,9 @@ const MapComponent = ({ places, loading }: MapComponentProps) => {
         lng: places[0].longitude
       } : defaultPosition }
       zoom={13} 
-
+      placeholder={
+        loading ? <MapLoader/> : undefined
+      }
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -58,6 +61,10 @@ const MapComponent = ({ places, loading }: MapComponentProps) => {
       />
       <MarkerClusterGroup
         showCoverageOnHover={true}
+        maxClusterRadius={60}
+        spiderfyOnMaxZoom={true}
+        zoomToBoundsOnClick={true}
+        removeOutsideVisibleBounds={true}
         //@ts-expect-error
         iconCreateFunction={(cluster) => {
           return L.divIcon({
@@ -66,6 +73,12 @@ const MapComponent = ({ places, loading }: MapComponentProps) => {
             iconSize: L.point(40, 40, true),
           });
         }}
+        eventHandlers={{
+          clusterclick: (e: any) => {
+            e.originalEvent.stopPropagation();
+          },
+        }}
+        
       >
         {places?.map((place) => <Marker key={place.place_id} place={place} />)}
       </MarkerClusterGroup>
