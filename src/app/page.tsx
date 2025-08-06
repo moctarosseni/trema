@@ -1,5 +1,5 @@
 "use client"
-import { useGetDummyPlaces } from "@/api";
+import { useGetPlaces } from "@/api";
 import CategoryItem from "@/components/CategoryItem";
 import Logo from "@/components/icons/Logo";
 import Map from "@/components/Map";
@@ -10,6 +10,7 @@ import 'react-leaflet-markercluster/styles'
 const categorieList = [
   { value: "Hotels & Accommodations", label : "Hôtels & hébergements"},
   { value: "Restaurants", label : "Restaurants"},
+  { value: "Bars & Nightlife", label : "Bars & Clubs"},
   { value: "Shoppings", label : "Shopping"},
   { value: "Arts", label : "Arts & Culture"},
   { value: "Cafes", label : "Cafés"},
@@ -18,8 +19,8 @@ const categorieList = [
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // const d = useGetPlaces(selectedCategories)
-  const { data: places , isLoading } = useGetDummyPlaces(selectedCategories)
+  const { data: places , isLoading }  = useGetPlaces(selectedCategories)
+  // const { data: places , isLoading } = useGetDummyPlaces(selectedCategories)
 
   const handleToggleCategory = (value: string) => {
     if(selectedCategories.includes(value)) {
@@ -30,9 +31,9 @@ export default function Home() {
 
   return (
     <div className={"h-screen  flex flex-col"}>
-      <div className="py-10 px-5">
-        <div className="mb-7"><Logo/></div>
-        <div className="flex flex-row flex-wrap gap-2 ">
+      <div className="pt-[36px] px-8">
+        <div className=""><Logo/></div>
+        <div className="flex flex-row flex-wrap gap-3 py-6 ">
           <CategoryItem 
             label={"Tous les lieux"} 
             selected={!selectedCategories.length}

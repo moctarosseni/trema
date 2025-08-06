@@ -22,10 +22,39 @@
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Inter, Arial, Helvetica, sans-serif;
 }
 
 .marker-cluster-custom {
     @apply !flex !flex-row  !items-center !justify-center bg-[#000000] text-white text-center 
     rounded-full text-[14px] font-bold !h-[35px] !w-[35px];
+}
+
+/* Ensure popups are visible and properly styled */
+.leaflet-popup-content-wrapper {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+    margin: 8px 12px;
+    line-height: 1.4;
+}
+
+.leaflet-popup-tip {
+    background: white;
+}
+
+/* Ensure popups appear above clusters */
+.leaflet-popup {
+    z-index: 1000 !important;
+}
+
+/* Make sure markers are clickable even when clustered */
+.leaflet-marker-icon {
+    cursor: pointer;
+}
+.leaflet-popup-tip {
+    display: none !important;
 }
