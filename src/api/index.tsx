@@ -1,72 +1,78 @@
-import { Place } from '@/types/places';
+import { GetPlaceDto, Place } from '@/types/places';
 import axios from 'axios';
-import { useQuery } from 'react-query';
+import { useInfiniteQuery } from 'react-query';
 
+interface PlacesResponse {
+  data: Place[];
+  total: number;
+  limit: number;
+  page: number
+}
 
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  status: number;
+interface ApiResponse {
+  data: Place[],
+  meta: {
+    filter_count: number
+    total_count: number,
+    page_count?: number
+  }
 }
 
 
-export const useGetPlaces = ( categories?: string[]) => useQuery<Place[], void>({
-  queryKey: ['places', categories],
-  queryFn: async () => {
-    let searchCategories = ""
-    // if(categories?.length){
-
-    //   const filterObject = {
-    //     _or: categories.map(cat => ({
-    //       categories: { _contains: cat }
-    //     }))
-    //   };
-    //   searchCategories = `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
-  
-    //   // const filterObject = {
-    //   //   _and: categories.map(cat => ({
-    //   //     categories: { _contains: cat }
-    //   //   }))
-    //   // };
-    //   // searchCategories = `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
-        
-        
-    //   // searchCategories = `&filter[categories][_eq]=${encodeURIComponent(JSON.stringify(categories))}`;
-    // }
-
-    const { data } = await axios.get(`https://admin.tre.ma/items/places?limit=400${searchCategories}`, {
-      headers: {
-        Authorization: "Bearer BNVt0x6gTllbqy2vbBpWFB6x8Y9se2Q0"
-      }
-    })
+export const useGetPlacesInfinite = ({categories, bounds, limit = 500 }: GetPlaceDto) => useInfiniteQuery<PlacesResponse, void>({
+  queryKey: ['placesInfinite', categories, bounds],
+  queryFn: async ({ pageParam = 1 }) => {
     
-    return filterPlacesByCategories(data.data, categories);
+    let searchParams = `limit=${limit}&page=${pageParam}&meta=*`;
+    
+    if (bounds) {
+      searchParams += `&filter[latitude][_gte]=${bounds.south}&filter[latitude][_lte]=${bounds.north}&filter[longitude][_gte]=${bounds.west}&filter[longitude][_lte]=${bounds.east}`;
+    }
+    
+    // Add categories filter if available
+    if (categories && categories.length > 0) {
+      const filterObject = {
+        _or: categories.map(cat => ({
+          categories: { _contains: cat }
+        }))
+      };
+      searchParams += `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
+    }
+
+    try {
+      const response = await axios.get(`https://admin.tre.ma/items/places?${searchParams}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`
+        }
+      });
+      
+      const { data , meta } = response.data as ApiResponse;
+      
+      return {
+        data,
+        total: meta.filter_count,
+        limit,
+        page_count: Math.ceil(meta.filter_count / limit),
+        page: pageParam
+      };
+    } catch (error) {
+      console.error('API error:', error);
+      throw error;
+    }
   },
+  getNextPageParam: (lastPage, allPages) => {
+    const nextOffset = allPages.length * lastPage.limit;
+    return nextOffset < lastPage.total ? allPages.length + 1 : undefined;
+  },
+  enabled: !!bounds,
+  keepPreviousData: true, 
+  refetchOnMount: false, 
 });
 
-// New method to get places from dummy.json with filter
-import dummyData from './dummy.json';
-
-// Helper function to filter places by categories
 function filterPlacesByCategories(places: Place[], categories?: string[]): Place[] {
   if (!categories || categories.length === 0) return places;
   return places.filter(place => {
-    // Assuming place.categories is an array of strings
     if (!Array.isArray((place as any).categories)) return false;
     return categories.some(cat => (place as any).categories.includes(cat));
   });
 }
-
-// Hook to get places from dummy.json with filter
-export const useGetDummyPlaces = (categories?: string[]) =>
-  useQuery<Place[], void>({
-    queryKey: ['dummyPlaces', categories],
-    queryFn: async () => {
-      // @ts-ignore
-      const places: Place[] = dummyData.data;
-      return filterPlacesByCategories(places, categories);
-    },
-  });
-
-
-export type { Place, ApiResponse };

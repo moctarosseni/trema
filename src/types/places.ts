@@ -1,4 +1,19 @@
 
+
+export interface MapBounds {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+}
+
+export interface GetPlaceDto {
+    bounds: MapBounds,
+    categories?: string[],
+    limit?: number
+    page?: number
+}
+
 export type Place = {
     place_id: string;
     name: string;

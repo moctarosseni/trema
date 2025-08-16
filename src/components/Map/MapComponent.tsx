@@ -1,70 +1,49 @@
 "use client"
-import React, { useMemo } from 'react'
-import { MapContainer, TileLayer } from "react-leaflet";
+import React  from 'react'
+import { MapContainer, TileLayer  } from "react-leaflet";
 import L from 'leaflet';
 import { Place } from '@/types/places';
 import Marker from './Marker';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { MapLoader } from '.';
+import MapEvent from './MapEvent';
 
-interface MapComponentProps {
+export interface Bound { north: number; south: number; east: number; west: number }
+export interface MapComponentProps {
   places: Place[]
   loading?: boolean
+  onBoundsChange?: (bounds: Bound) => void
 }
 
-const defaultPosition = { lat: 51.505, lng: -0.09}
+const defaultPosition = { lat: 48.8, lng: 2.3 }
 
-const MapComponent = ({ places, loading }: MapComponentProps) => {
-
-  // Calculate the center of the places we are showing
-  const centerPosition = useMemo(() => {
-    if (!places || places.length === 0) return defaultPosition;
-    // Try to use location.coordinates if available, else fallback to latitude/longitude
-    let latSum = 0, lngSum = 0, count = 0;
-    places.forEach(place => {
-      let lat: number | undefined, lng: number | undefined;
-      if (place.location && Array.isArray(place.location.coordinates)) {
-        // GeoJSON: [lng, lat]
-        lng = place.location.coordinates[0];
-        lat = place.location.coordinates[1];
-      } else if (typeof place.latitude === "number" && typeof place.longitude === "number") {
-        lat = place.latitude;
-        lng = place.longitude;
-      }
-      if (typeof lat === "number" && typeof lng === "number") {
-        latSum += lat;
-        lngSum += lng;
-        count++;
-      }
-    });
-    if (count === 0) return defaultPosition;
-    return { lat: latSum / count, lng: lngSum / count };
-  }, [places]);
+const MapComponent = ({ 
+  places, 
+  loading, 
+  onBoundsChange,
+}: MapComponentProps) => {
 
 
   return (
     <MapContainer 
-      className='h-full w-full' 
-      // center={centerPosition || position} 
-      center={places.length  ?{
-        lat:places[0].latitude,
-        lng: places[0].longitude
-      } : defaultPosition }
+      className='h-full w-full relative' 
+      center={defaultPosition}
       zoom={13} 
-      placeholder={
-        loading ? <MapLoader/> : undefined
-      }
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      
+      <MapEvent 
+        onBoundsChange={onBoundsChange}
+      />
+      
       <MarkerClusterGroup
         showCoverageOnHover={true}
         maxClusterRadius={60}
         spiderfyOnMaxZoom={true}
         zoomToBoundsOnClick={true}
-        removeOutsideVisibleBounds={true}
+        removeOutsideVisibleBounds={false} // Keep markers outside viewport to show accumulated data
         //@ts-expect-error
         iconCreateFunction={(cluster) => {
           return L.divIcon({
@@ -78,10 +57,15 @@ const MapComponent = ({ places, loading }: MapComponentProps) => {
             e.originalEvent.stopPropagation();
           },
         }}
-        
       >
         {places?.map((place) => <Marker key={place.place_id} place={place} />)}
       </MarkerClusterGroup>
+      
+      {loading &&(
+        <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 z-[999]">
+          <div className="w-5 h-5 border-2 border-[#191B1E] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </MapContainer>
   )
 }
