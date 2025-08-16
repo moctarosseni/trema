@@ -29,15 +29,14 @@ export const useGetPlacesInfinite = ({categories, bounds, limit = 500 }: GetPlac
       searchParams += `&filter[latitude][_gte]=${bounds.south}&filter[latitude][_lte]=${bounds.north}&filter[longitude][_gte]=${bounds.west}&filter[longitude][_lte]=${bounds.east}`;
     }
     
-    // Add categories filter if available
-    if (categories && categories.length > 0) {
-      const filterObject = {
-        _or: categories.map(cat => ({
-          categories: { _contains: cat }
-        }))
-      };
-      searchParams += `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
-    }
+    // if (categories && categories.length > 0) {
+    //   const filterObject = {
+    //     _or: categories.map(cat => ({
+    //       categories: { _contains: cat }
+    //     }))
+    //   };
+    //   searchParams += `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
+    // }
 
     try {
       const response = await axios.get(`https://admin.tre.ma/items/places?${searchParams}`, {
@@ -49,7 +48,7 @@ export const useGetPlacesInfinite = ({categories, bounds, limit = 500 }: GetPlac
       const { data , meta } = response.data as ApiResponse;
       
       return {
-        data,
+        data: filterPlacesByCategories(data, categories),
         total: meta.filter_count,
         limit,
         page_count: Math.ceil(meta.filter_count / limit),
