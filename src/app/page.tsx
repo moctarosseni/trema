@@ -25,10 +25,29 @@ const defaultBounds = {
   west: 2.3
 };
 
+const defaultPosition = { lat: 48.8566, lng: 2.3522 } 
+
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [accumulatedPlaces, setAccumulatedPlaces] = useState<Place[]>([]);
+
+  // Get user's current location on component mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          setUserLocation(defaultPosition);
+        }
+      );
+    } else {
+      setUserLocation(defaultPosition);
+    }
+  }, []);
 
   const { bounds, handleBoundsChange, resetBounds } = useMapInfiniteScroll({
     onBoundsChange: (newBounds) => {
@@ -37,21 +56,33 @@ export default function Home() {
     debounceMs: 500
   });
 
+  const getDefaultBounds = () => {
+    if (userLocation) {
+      const offset = 0.01; 
+      return {
+        north: userLocation.lat + offset,
+        south: userLocation.lat - offset,
+        east: userLocation.lng + offset,
+        west: userLocation.lng - offset
+      };
+    }
+    return defaultBounds;
+  };
+
   const [filters, setFilters] = useState<GetPlaceDto>({
     categories: selectedCategories,
-    bounds: bounds || defaultBounds,
+    bounds: getDefaultBounds(),
     limit: 500, 
     page: 1
   })
 
-  const { 
-    data: infiniteData, 
-    isLoading, 
-    isFetchingNextPage, 
-    hasNextPage, 
-    isFetching,
-    refetch
-  } = useGetPlacesInfinite(filters);
+  useEffect(() => {
+    if (userLocation) {
+      setFilters(prev => ({ ...prev, bounds: getDefaultBounds() }));
+    }
+  }, [userLocation]);
+
+  const { data: infiniteData, isFetching } = useGetPlacesInfinite(filters);
 
   const addNewPlaces = (newPlaces: Place[]) => {
     setAccumulatedPlaces(prevPlaces => {
@@ -96,14 +127,6 @@ export default function Home() {
     setSelectedCategories([ ...selectedCategories, value])
   }
 
-  const handleRefresh = () => {
-    setAccumulatedPlaces([]);
-    refetch();
-  };
-
-  const totalPages = infiniteData?.pages?.length || 0;
-  const totalPlacesBeforeDedup = infiniteData?.pages?.reduce((total, page) => total + (page.data?.length || 0), 0) || 0;
-
   return (
     <div className={"h-screen  flex flex-col dark"}>
       <div className="pt-[36px] px-8">
@@ -123,28 +146,13 @@ export default function Home() {
           ))}
         </div>
         
-        {/* Debug info - you can remove this later */}
-        <div className="text-xs text-gray-500 mb-2 flex items-center gap-4">
-          <span>Places uniques: {accumulatedPlaces.length}</span>
-          <span>Total pages: {totalPages}</span>
-          <span>Total API: {totalPlacesBeforeDedup}</span>
-          <span>Has next page: {hasNextPage ? 'Yes' : 'No'}</span>
-          <span>Loading next: {isFetchingNextPage ? 'Yes' : 'No'}</span>
-          <span>Loading: {isLoading ? 'Yes' : 'No'}</span>
-          <button 
-            onClick={handleRefresh}
-            className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs hover:bg-blue-200"
-          >
-            Refresh
-          </button>
-        </div>
-        
       </div>
       <div className="flex-1 relative">
         <Map 
           places={accumulatedPlaces} 
           loading={isFetching} 
           onBoundsChange={handleMapBoundsChange}
+          userLocation={userLocation}
         />
       </div>
     </div>

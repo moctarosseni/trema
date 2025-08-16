@@ -34,11 +34,15 @@ const Marker = ({ place, ...rest }: MarkerProps) => {
         closeButton={false}  
         closeOnEscapeKey={true}
       >
-        <div className="">
+        <div className="min-w-[80px]">
           <div className="text-sm text-[#191B1E] mb-2">{place.name}</div>
           <div className="flex flex-row gap-3">
-            <Phone />
-            <Globe />
+            <span className='w-[16px]'>
+              <Phone />
+            </span>
+            <span className='w-[16px]'>
+              <Globe />
+            </span>
             <Image src={Pin} width={18} height={18}  alt='Position Géorgaphique'/>
           </div>
         </div>
