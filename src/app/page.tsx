@@ -1,22 +1,13 @@
 "use client"
 import { useGetPlacesInfinite } from "@/api";
-import CategoryItem from "@/components/CategoryItem";
 import Logo from "@/components/icons/Logo";
 import Map from "@/components/Map";
+import Filter from "@/components/Filter";
 import { useState, useEffect, useCallback } from "react";
 import { useMapInfiniteScroll } from "@/hooks/useMapInfiniteScroll";
 
 import 'react-leaflet-markercluster/styles'
 import { GetPlaceDto, Place } from "@/types/places";
-
-const categorieList = [
-  { value: "Hotels & Accommodations", label : "Hôtels & hébergements"},
-  { value: "Restaurants", label : "Restaurants"},
-  { value: "Bars & Nightlife", label : "Bars & Clubs"},
-  { value: "Shoppings", label : "Shopping"},
-  { value: "Arts", label : "Arts & Culture"},
-  { value: "Cafes", label : "Cafés"},
-]
 
 const defaultBounds = {
   north: 48.9, 
@@ -32,7 +23,6 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [accumulatedPlaces, setAccumulatedPlaces] = useState<Place[]>([]);
 
-  // Get user's current location on component mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -120,31 +110,20 @@ export default function Home() {
     handleBoundsChange(newBounds);
   }, [handleBoundsChange]);
 
-  const handleToggleCategory = (value: string) => {
-    if(selectedCategories.includes(value)) {
-      return setSelectedCategories(selectedCategories.filter((cat) => cat !== value))
-    }
-    setSelectedCategories([ ...selectedCategories, value])
-  }
+  const handleCategoriesChange = useCallback((newCategories: string[]) => {
+    setSelectedCategories(newCategories);
+    setFilters(prev => ({ ...prev, categories: newCategories }));
+  }, []);
 
   return (
     <div className={"h-screen  flex flex-col dark"}>
       <div className="pt-[36px] px-8">
         <div className=""><Logo/></div>
-        <div className="flex flex-row flex-wrap gap-3 py-6 ">
-          <CategoryItem 
-            label={"Tous les lieux"} 
-            selected={!selectedCategories.length}
-            onClick={() => setSelectedCategories([])}
-          /> 
-          {categorieList.map(({ label, value }) => (
-            <CategoryItem 
-              key={value} 
-              label={label} selected={selectedCategories.includes(value)}
-              onClick={() => handleToggleCategory(value)}
-            /> 
-          ))}
-        </div>
+        
+        <Filter 
+          selectedCategories={selectedCategories}
+          onCategoriesChange={handleCategoriesChange}
+        />
         
       </div>
       <div className="flex-1 relative">
