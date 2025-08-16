@@ -8,19 +8,20 @@ import { useMapInfiniteScroll } from "@/hooks/useMapInfiniteScroll";
 
 import 'react-leaflet-markercluster/styles'
 import { GetPlaceDto, Place } from "@/types/places";
+import { Position } from "@/components/Map/MapComponent";
 
 const defaultBounds = {
-  north: 48.9, 
-  south: 48.8,
-  east: 2.4,
-  west: 2.3
+  north: 48.79, 
+  south: 48.93,
+  east: 2.16,
+  west: 2.51
 };
 
 const defaultPosition = { lat: 48.8566, lng: 2.3522 } 
 
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [userLocation, setUserLocation] = useState<Position | null>(defaultPosition);
   const [accumulatedPlaces, setAccumulatedPlaces] = useState<Place[]>([]);
 
   useEffect(() => {

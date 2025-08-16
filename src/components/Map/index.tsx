@@ -12,13 +12,9 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
   loading: () => <MapLoader />
 })
 
-const Map = ({ places, loading, onBoundsChange }: MapComponentProps) => {
+const Map = (props: MapComponentProps) => {
   return (
-    <MapComponent 
-      places={places} 
-      loading={loading} 
-      onBoundsChange={onBoundsChange}
-    />
+    <MapComponent  {...props} />
   )
 }
 

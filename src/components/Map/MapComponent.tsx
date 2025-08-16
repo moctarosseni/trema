@@ -1,5 +1,5 @@
 "use client"
-import React  from 'react'
+import React from 'react'
 import { MapContainer, TileLayer  } from "react-leaflet";
 import L from 'leaflet';
 import { Place } from '@/types/places';
@@ -8,11 +8,12 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import MapEvent from './MapEvent';
 
 export interface Bound { north: number; south: number; east: number; west: number }
+export interface Position { lat: number; lng: number }
 export interface MapComponentProps {
   places: Place[]
   loading?: boolean
   onBoundsChange?: (bounds: Bound) => void
-  userLocation?: { lat: number; lng: number } | null
+  userLocation?: Position | null
 }
 
 const defaultPosition = { lat: 48.8566, lng: 2.3522 } 
