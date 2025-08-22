@@ -14,6 +14,28 @@ export interface GetPlaceDto {
     page?: number
 }
 
+
+
+export interface GetVisiblePlacesParams {
+    bounds?: {
+      north: number
+      south: number
+      east: number
+      west: number
+    }
+    categories?: string[]
+    limit?: number
+    page?: number
+}
+  
+export interface GetVisiblePlacesResponse {
+    data: Place[];
+    hasMore: boolean;
+    limit: number;
+    page: number
+    count: number
+} 
+
 export type Place = {
     place_id: string;
     name: string;

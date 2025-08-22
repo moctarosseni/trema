@@ -10,12 +10,15 @@
     "ts:check": "tsc --noEmit && echo 🎉 No TypeScript issues were found."
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.1",
+    "@supabase/supabase-js": "^2.55.0",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
     "next": "15.4.5",
     "react": "^19.0.0-rc.1",
     "react-dom": "^19.0.0-rc.1",
+    "react-hook-form": "^7.62.0",
     "react-leaflet": "^5.0.0-rc.2",
     "react-leaflet-markercluster": "^5.0.0-rc.0",
     "react-query": "^3.39.3",

@@ -1,6 +1,6 @@
-import { GetPlaceDto, Place } from '@/types/places';
+import { GetPlaceDto, GetVisiblePlacesParams, GetVisiblePlacesResponse, Place } from '@/types/places';
 import axios from 'axios';
-import { useInfiniteQuery } from 'react-query';
+import { useInfiniteQuery, useQuery } from 'react-query';
 
 interface PlacesResponse {
   data: Place[];
@@ -67,6 +67,31 @@ export const useGetPlacesInfinite = ({categories, bounds, limit = 500 }: GetPlac
   keepPreviousData: true, 
   refetchOnMount: false, 
 });
+
+export const useGetPlaces = ({ categories, bounds, limit = 100, page }: GetVisiblePlacesParams) => useQuery({
+  queryKey: ['places', categories, bounds],
+  queryFn: async () => {
+    const queryParams = new URLSearchParams()
+    
+    if (bounds) {
+      queryParams.append('bounds', JSON.stringify(bounds))
+    }
+    if (!!categories?.length) {
+      queryParams.append('categories', JSON.stringify(categories))
+    }
+    if (limit) {
+      queryParams.append('limit', limit.toString())
+    }
+    queryParams.append('page', page?.toString() || '1')
+    
+    return (await axios.get(`/api/places?${queryParams}`)).data as GetVisiblePlacesResponse
+   
+  },
+  enabled: !!bounds,
+  keepPreviousData: true,
+  refetchOnMount: false,
+});
+
 
 function filterPlacesByCategories(places: Place[], categories?: string[]): Place[] {
   if (!categories || categories.length === 0) return places;
