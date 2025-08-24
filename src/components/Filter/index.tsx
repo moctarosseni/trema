@@ -60,29 +60,29 @@ const Filter: React.FC<FilterProps> = ({
   return (
 
     <div>
-        <div className="flex flex-row flex-wrap gap-3 py-6">
-            <CategoryItem 
-            label="Tous les lieux" 
-            selected={!selectedCategories.length}
-            onClick={handleClearCategories}
-            /> 
-            {categorieList.map(({ label, value }) => (
-            <CategoryItem 
-                key={value} 
-                label={label} 
-                selected={selectedCategories.includes(value)}
-                onClick={() => handleToggleCategory(value)}
-            /> 
-            ))}
+      <div className="flex flex-row flex-wrap gap-3 py-6">
+        <CategoryItem 
+          label="Tous les lieux" 
+          selected={!selectedCategories.length}
+          onClick={handleClearCategories}
+        /> 
+        {categorieList.map(({ label, value }) => (
+          <CategoryItem 
+              key={value} 
+              label={label} 
+              selected={selectedCategories.includes(value)}
+              onClick={() => handleToggleCategory(value)}
+          /> 
+        ))}
+      </div>
+      
+      {categoryError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+              <span className="text-sm text-red-800">{categoryError}</span>
+          </div>
         </div>
-        
-        {categoryError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-                <span className="text-sm text-red-800">{categoryError}</span>
-            </div>
-            </div>
-        )}
+      )}
     </div>
   );
 };

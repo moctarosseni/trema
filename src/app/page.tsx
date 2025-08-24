@@ -2,34 +2,28 @@
 import Logo from "@/components/icons/Logo";
 import Map from "@/components/Map";
 import Filter from "@/components/Filter";
-import { useState, useEffect, useCallback } from "react";
-import { useMapInfiniteScroll } from "@/hooks/useMapInfiniteScroll";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useMapInfiniteScroll, BoundsChangeData } from "@/hooks/useMapInfiniteScroll";
 import { useGetPlaces } from "@/api";
 import 'react-leaflet-markercluster/styles'
 import { GetVisiblePlacesParams } from "@/types/places";
 import { Position } from "@/components/Map/MapComponent";
-
-const defaultBounds = {
-  north: 48.79, 
-  south: 48.93,
-  east: 2.16,
-  west: 2.51
-};
-
-const defaultPosition = { lat: 48.8566, lng: 2.3522 } 
+import { DEFAULT_BOUNDS, DEFAUlT_POSITION, MOVEMENT_THRESHOLD } from "@/config";
 
 export default function Home() {
-  // const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(defaultPosition);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(DEFAUlT_POSITION);
   const [filters, setFilters] = useState<GetVisiblePlacesParams>({
-    bounds: defaultBounds,
+    bounds: DEFAULT_BOUNDS,
     categories: [],
     limit: 100,
     page: 1
   });
   
+  const previousBoundsRef = useRef<typeof DEFAULT_BOUNDS>(DEFAULT_BOUNDS);
+  const currentZoomRef = useRef<number>(13);
+  
   const getBounds = useCallback((position?: Position) => {
-    if(!position) position = defaultPosition;
+    if(!position) position = DEFAUlT_POSITION;
     const offset = 0.01; 
     return {
       north: position.lat + offset,
@@ -39,40 +33,61 @@ export default function Home() {
     };
   }, []);
 
+  const getMovementThreshold = useCallback((zoom: number) => {
+    if (zoom <= 12) return 0.02;
+    if (zoom <= 15) return 0.01;
+    return 0.005;
+  }, []);
+
+  const isSignificantMovement = useCallback((newBounds: typeof DEFAULT_BOUNDS, zoom: number) => {
+    const prev = previousBoundsRef.current;
+    const threshold = getMovementThreshold(zoom);
+    
+    const latChange = Math.abs(newBounds.north - prev.north) + Math.abs(newBounds.south - prev.south);
+    const lngChange = Math.abs(newBounds.east - prev.east) + Math.abs(newBounds.west - prev.west);
+    
+    
+    return latChange > threshold || lngChange > threshold;
+  }, [getMovementThreshold]);
+
   const {  data: placesData, isLoading } = useGetPlaces(filters);
 
   const places = placesData?.data || [];
-
-  console.log('Places data:', placesData);
-  
+    
   useEffect(() => {
     if (navigator.geolocation) {
-      console.log('Geolocation is supported');
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
+          setFilters({ ...filters, bounds: getBounds({ lat: latitude, lng: longitude }) });
+          previousBoundsRef.current = DEFAULT_BOUNDS;
         },
-        (error) => {
-          setUserLocation(defaultPosition);
-        }
       );
-    } else {
-      setUserLocation(defaultPosition);
-    }
+    } 
   }, []);
 
 
   const { handleBoundsChange } = useMapInfiniteScroll({
-    onBoundsChange: (newBounds) => {
-      setFilters({ ...filters, bounds: newBounds });
+    onBoundsChange: (data: BoundsChangeData) => {
+      const { bounds: newBounds, zoom } = data;
+      
+      currentZoomRef.current = zoom;
+      
+      // Vérifier si le mouvement est suffisamment important avant de mettre à jour les filtres
+      if (isSignificantMovement(newBounds, zoom)) {
+        setFilters({ ...filters, bounds: newBounds });
+        previousBoundsRef.current = newBounds;
+      } else {
+        console.log('Movement too small, skipping API call');
+      }
     },
     debounceMs: 500
   });
 
 
-  const handleMapBoundsChange = useCallback((newBounds: typeof defaultBounds) => {
-    handleBoundsChange(newBounds);
+  const handleMapBoundsChange = useCallback((data: BoundsChangeData) => {
+    handleBoundsChange(data);
   }, [handleBoundsChange]);
 
   const handleCategoriesChange = useCallback((newCategories: string[]) => {
@@ -88,7 +103,6 @@ export default function Home() {
           selectedCategories={filters.categories || []}
           onCategoriesChange={handleCategoriesChange}
         />
-        
       </div>
       
       <div className="flex-1 relative">

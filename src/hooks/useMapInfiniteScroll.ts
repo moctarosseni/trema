@@ -7,8 +7,13 @@ interface MapBounds {
   west: number;
 }
 
+export interface BoundsChangeData {
+  bounds: MapBounds;
+  zoom: number;
+}
+
 interface UseMapInfiniteScrollOptions {
-  onBoundsChange?: (bounds: MapBounds) => void;
+  onBoundsChange?: (data: BoundsChangeData) => void;
   debounceMs?: number;
 }
 
@@ -17,7 +22,7 @@ export const useMapInfiniteScroll = (options: UseMapInfiniteScrollOptions = {}) 
   const [bounds, setBounds] = useState<MapBounds | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleBoundsChange = useCallback((newBounds: MapBounds) => {
+  const handleBoundsChange = useCallback((data: BoundsChangeData) => {
     // Clear existing timeout
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
@@ -25,8 +30,8 @@ export const useMapInfiniteScroll = (options: UseMapInfiniteScrollOptions = {}) 
 
     // Debounce bounds changes to avoid too many API calls
     debounceTimeoutRef.current = setTimeout(() => {
-      setBounds(newBounds);
-      onBoundsChange?.(newBounds);
+      setBounds(data.bounds);
+      onBoundsChange?.(data);
     }, debounceMs);
   }, [onBoundsChange, debounceMs]);
 

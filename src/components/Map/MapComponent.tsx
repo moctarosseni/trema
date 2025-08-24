@@ -5,14 +5,14 @@ import L from 'leaflet';
 import { Place } from '@/types/places';
 import Marker from './Marker';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import MapEvent from './MapEvent';
+import MapEvent, { BoundsChangeData } from './MapEvent';
 
 export interface Bound { north: number; south: number; east: number; west: number }
 export interface Position { lat: number; lng: number }
 export interface MapComponentProps {
   places: Place[]
   loading?: boolean
-  onBoundsChange?: (bounds: Bound) => void
+  onBoundsChange?: (data: BoundsChangeData) => void
   userLocation?: Position | null
 }
 

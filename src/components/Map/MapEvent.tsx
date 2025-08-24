@@ -2,9 +2,13 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { useMap } from 'react-leaflet';
 import { Bound } from './MapComponent';
 
+export interface BoundsChangeData {
+  bounds: Bound;
+  zoom: number;
+}
 
 const MapEvent = ({ onBoundsChange }: {
-  onBoundsChange?: (bounds: Bound) => void
+  onBoundsChange?: (data: BoundsChangeData) => void
 }) => {
   const map = useMap();
   const lastBounds = useRef<L.LatLngBounds | null>(null);
@@ -38,7 +42,7 @@ const MapEvent = ({ onBoundsChange }: {
         west: bounds.getWest()
       };
       
-      onBoundsChange?.(newBounds);
+      onBoundsChange?.({ bounds: newBounds, zoom: currentZoom });
     }
   }, [map, onBoundsChange]);
 
