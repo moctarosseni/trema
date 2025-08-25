@@ -1,6 +1,6 @@
 import { GetPlaceDto, GetVisiblePlacesParams, GetVisiblePlacesResponse, Place } from '@/types/places';
 import axios from 'axios';
-import { useInfiniteQuery, useQuery } from 'react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 interface PlacesResponse {
   data: Place[];
