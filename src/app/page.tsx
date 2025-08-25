@@ -54,35 +54,33 @@ export default function Home() {
 
   const places = placesData?.data || [];
     
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          setFilters({ ...filters, bounds: getBounds({ lat: latitude, lng: longitude }) });
-          previousBoundsRef.current = DEFAULT_BOUNDS;
-        },
-      );
-    } 
-  }, []);
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setUserLocation({ lat: latitude, lng: longitude });
+  //         setFilters({ ...filters, bounds: getBounds({ lat: latitude, lng: longitude }) });
+  //         previousBoundsRef.current = DEFAULT_BOUNDS;
+  //       },
+  //     );
+  //   } 
+  // }, []);
 
 
   const { handleBoundsChange } = useMapInfiniteScroll({
     onBoundsChange: (data: BoundsChangeData) => {
       const { bounds: newBounds, zoom } = data;
-      
       currentZoomRef.current = zoom;
       
       // Vérifier si le mouvement est suffisamment important avant de mettre à jour les filtres
       if (isSignificantMovement(newBounds, zoom)) {
         setFilters({ ...filters, bounds: newBounds });
         previousBoundsRef.current = newBounds;
-      } else {
-        console.log('Movement too small, skipping API call');
-      }
+      } 
     },
-    debounceMs: 500
+    debounceMs: 500,
+    minDistanceThreshold: getMovementThreshold(currentZoomRef.current),
   });
 
 
@@ -111,6 +109,7 @@ export default function Home() {
           loading={isLoading} 
           onBoundsChange={handleMapBoundsChange}
           userLocation={userLocation}
+          categories={filters.categories}
         />
       </div>
     </div>
