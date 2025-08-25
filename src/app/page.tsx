@@ -54,18 +54,18 @@ export default function Home() {
 
   const places = placesData?.data || [];
     
-  // useEffect(() => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         setUserLocation({ lat: latitude, lng: longitude });
-  //         setFilters({ ...filters, bounds: getBounds({ lat: latitude, lng: longitude }) });
-  //         previousBoundsRef.current = DEFAULT_BOUNDS;
-  //       },
-  //     );
-  //   } 
-  // }, []);
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          setFilters({ ...filters, bounds: getBounds({ lat: latitude, lng: longitude }) });
+          previousBoundsRef.current = DEFAULT_BOUNDS;
+        },
+      );
+    } 
+  }, []);
 
 
   const { handleBoundsChange } = useMapInfiniteScroll({
